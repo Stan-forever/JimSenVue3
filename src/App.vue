@@ -19,7 +19,6 @@ const locale = computed(() => {
 
 onMounted(() => {
   initTheme();
-  console.log("tag");
 });
 </script>
 

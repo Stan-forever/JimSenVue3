@@ -1,7 +1,9 @@
 <template>
-  <iframe className="pdf-iframe" title="预览文档" src="./1.pdf" width="100%" height="100%"></iframe>
+  <div>111</div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useEcharts } from "@/hooks/useEcharts";
+</script>
 
 <style scoped></style>

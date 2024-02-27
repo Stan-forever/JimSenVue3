@@ -75,7 +75,8 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      const res = await loginApi({ ...form.value });
+      //   const res = await loginApi({ ...form.value });
+      const res = { data: { token: "111" } };
       userStore.setToken(res.data.token);
       router.push("/home/index");
     } else {

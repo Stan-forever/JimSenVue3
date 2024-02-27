@@ -20,5 +20,6 @@ export const useGlobalStore = defineStore({
       this.primary = val;
     }
   },
+  getters: {},
   persist: true
 });

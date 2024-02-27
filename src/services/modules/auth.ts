@@ -1,5 +1,7 @@
 import http from "@/services/index";
 
+import authMenuList from "@/assets/json/authMenuList.json";
+
 interface LoginParamsType {
   username: string;
   password: string;
@@ -14,5 +16,6 @@ export const loginApi = (params: LoginParamsType) => {
 };
 
 export const getMenuList = () => {
-  return http.get<Menu.MenuOptions[]>("/menuList");
+  // return http.get<Menu.MenuOptions[]>("/menuList");
+  return authMenuList;
 };
