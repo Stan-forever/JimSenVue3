@@ -26,7 +26,7 @@ export const useAuthStore = defineStore({
   actions: {
     async getMenuList() {
       const res = await getMenuList();
-      this.menu = res.data;
+      this.menu = res.data as any;
     }
   }
   //   persist: true

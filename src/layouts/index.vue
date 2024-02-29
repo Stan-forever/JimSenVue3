@@ -2,7 +2,7 @@
   <div class="w-full h-full">
     <el-container class="w-full h-full">
       <el-aside style="width: 240px">
-        <el-scrollbar>
+        <el-scrollbar class="h-full">
           <el-menu
             active-text-color="#ffd04b"
             background-color="#545c64"
@@ -76,55 +76,13 @@ const activeMenu = computed(() => (route.meta.activeMenu ? route.meta.activeMenu
     padding: 24px;
   }
 }
-:deep(.el-menu-vertical-trader) {
+/* :deep(.el-menu-vertical-trader) {
   height: 100vh;
-}
-/* .el-container {
-  width: 100%;
+} */
+/* :deep(.el-scrollbar__view) {
   height: 100%;
-  :deep(.el-aside) {
-    width: auto;
-    background-color: var(--el-menu-bg-color);
-    border-right: 1px solid var(--el-aside-border-color);
-    .aside-box {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      transition: width 0.3s ease;
-      .el-scrollbar {
-        height: calc(100% - 55px);
-        .el-menu {
-          width: 100%;
-          overflow-x: hidden;
-          border-right: none;
-        }
-      }
-      .logo {
-        box-sizing: border-box;
-        height: 55px;
-        .logo-img {
-          width: 28px;
-          object-fit: contain;
-          margin-right: 6px;
-        }
-        .logo-text {
-          font-size: 21.5px;
-          font-weight: bold;
-          color: var(--el-aside-logo-text-color);
-          white-space: nowrap;
-        }
-      }
-    }
-  }
-  .el-header {
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 55px;
-    padding: 0 15px;
-    background-color: var(--el-header-bg-color);
-    border-bottom: 1px solid var(--el-header-border-color);
-  }
+}
+:deep(.el-menu) {
+  height: 100%;
 } */
 </style>

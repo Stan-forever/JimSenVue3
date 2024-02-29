@@ -4,15 +4,23 @@
   <el-button type="primary" @click="resetToken">ResetToken</el-button>
   <el-button type="primary" @click="openPdf">openPdf</el-button>
   <!-- <div class="rectangle"></div> -->
+  <!-- <Child :[attributeName]="1" /> -->
+  <div>当前attributeName: {{ attributeName }}</div>
+  <el-button @click="handleSwitch">Switch</el-button>
+  <el-divider></el-divider>
+  <IndexCom />
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, computed, ref, nextTick } from "vue";
 import { useUserStore } from "@/stores/modules/user";
 
 import { useRouter } from "vue-router";
 
 import PrototyeEnum from "./prototypeEnum";
+
+import Child from "./components/Child.vue";
+import IndexCom from "./components/index.vue";
 
 const userStore = useUserStore();
 
@@ -30,10 +38,22 @@ const typeFn = (type: any) => {
   return Object.prototype.toString.call(type);
 };
 
+const isId = ref(true);
+const handleSwitch = () => {
+  isId.value = !isId.value;
+};
+
+const attributeName = computed(() => {
+  return isId.value ? "id" : "name";
+});
+
 onMounted(() => {
   typeFn([]);
-  //   console.log(PrototyeEnum[typeFn([])]);
-  console.log(PrototyeEnum[typeFn(typeFn)]);
+  nextTick(() => {
+    setTimeout(() => {
+      console.log("000");
+    }, 0);
+  });
 });
 </script>
 
