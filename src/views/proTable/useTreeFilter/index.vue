@@ -1,11 +1,11 @@
 <template>
   <div>
-    <TemplatePage />
+    <Gradient />
   </div>
 </template>
 
 <script setup lang="ts">
-import TemplatePage from "./provide、inject/index.vue";
+import Gradient from "./components/Gradient.vue";
 </script>
 
 <style scoped></style>

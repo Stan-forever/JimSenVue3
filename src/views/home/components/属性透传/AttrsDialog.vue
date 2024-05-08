@@ -1,11 +1,11 @@
 <template>
-  <div>
-    <el-dialog v-bind="$attrs" v-model="visible" @close="handleClose" :title="dialogParams.title">
-      <template #footer>
-        <el-button @click="handleClose">关闭</el-button>
-      </template>
-    </el-dialog>
-  </div>
+  <!-- <div> -->
+  <el-dialog v-bind="$attrs" v-model="visible" @close="handleClose" :title="dialogParams.title">
+    <template #footer>
+      <el-button @click="handleClose">关闭</el-button>
+    </template>
+  </el-dialog>
+  <!-- </div> -->
 </template>
 
 <script setup lang="ts">

@@ -2,16 +2,8 @@
   <div class="w-full h-full">
     <el-container class="w-full h-full">
       <el-aside style="width: 240px">
-        <el-scrollbar class="h-full">
-          <el-menu
-            active-text-color="#ffd04b"
-            background-color="#545c64"
-            text-color="#fff"
-            :router="false"
-            :default-active="activeMenu"
-            :collapse-transition="false"
-            :unique-opened="true"
-          >
+        <el-scrollbar>
+          <el-menu :router="false" :default-active="activeMenu" :collapse-transition="false" :unique-opened="true">
             <SubMenu :menu-list="menuList" />
           </el-menu>
         </el-scrollbar>
@@ -21,16 +13,17 @@
           <div class="w-full h-8">
             <Header />
           </div>
-          <div class="w-full h-12">
-            <Tabs />
+          <div class="w-full h-12 flex">
+            <Tabs class="flex-1" />
+            <MoreButtons class="w-10" />
           </div>
         </el-header>
         <el-main class="main">
           <router-view v-slot="{ Component, route }">
-            <transition mode="out-in">
+            <transition appear name="fade-transform" mode="out-in">
               <!-- <keep-alive> -->
               <div :class="!isDiyStyle ? 'main-content' : 'h-full'">
-                <component :is="Component" :key="route.fullPath"></component>
+                <component :is="Component" :key="route.fullPath" v-if="isRouterShow" />
               </div>
               <!-- </keep-alive> -->
             </transition>
@@ -43,15 +36,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, provide, ref } from "vue";
 import { useRoute } from "vue-router";
 import SubMenu from "./components/Menu/SubMemu.vue";
 import Tabs from "./components/Tabs/index.vue";
+import MoreButtons from "./components/MoreButtons/index.vue";
 import Header from "./components/Header/index.vue";
 
 import { useAuthStore } from "@/stores/modules/auth";
 const authStore = useAuthStore();
 const route = useRoute();
+
+const isRouterShow = ref(true);
+const refreshPage = (value: boolean) => (isRouterShow.value = value);
+provide("refreshPage", refreshPage);
 
 const isDiyStyle = computed(() => {
   return route.fullPath === "/auth/menu";
@@ -71,18 +69,26 @@ const activeMenu = computed(() => (route.meta.activeMenu ? route.meta.activeMenu
   .main-content {
     background: #fff;
     border-radius: 8px;
-    height: 100%;
+    min-height: 100%;
     width: 100%;
     padding: 24px;
   }
 }
-/* :deep(.el-menu-vertical-trader) {
-  height: 100vh;
-} */
-/* :deep(.el-scrollbar__view) {
-  height: 100%;
+:deep(.el-header) {
+  background-color: var(--el-header-bg-color);
 }
-:deep(.el-menu) {
-  height: 100%;
-} */
+.el-container {
+  :deep(.el-aside) {
+    background-color: var(--el-menu-bg-color);
+    border-right: 1px solid var(--el-aside-border-color);
+    .el-scrollbar {
+      height: 100%;
+      .el-menu {
+        width: 100%;
+        overflow-x: hidden;
+        border-right: none;
+      }
+    }
+  }
+}
 </style>

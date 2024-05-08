@@ -9,6 +9,8 @@
   <el-button @click="handleSwitch">Switch</el-button>
   <el-divider></el-divider>
   <IndexCom />
+  <el-divider></el-divider>
+  <el-button v-debounce="debounceClick" type="primary">debounceClick</el-button>
 </template>
 
 <script setup lang="ts">
@@ -46,6 +48,10 @@ const handleSwitch = () => {
 const attributeName = computed(() => {
   return isId.value ? "id" : "name";
 });
+
+const debounceClick = () => {
+  console.log("debounce");
+};
 
 onMounted(() => {
   typeFn([]);

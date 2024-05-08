@@ -4,13 +4,15 @@ import { DEFAULT_PRIMARY } from "@/config";
 interface GlobalType {
   isDark: boolean;
   primary: string;
+  asideInverted: boolean;
 }
 
 export const useGlobalStore = defineStore({
   id: "globalStore",
   state: (): GlobalType => ({
     isDark: false,
-    primary: DEFAULT_PRIMARY
+    primary: DEFAULT_PRIMARY,
+    asideInverted: false
   }),
   actions: {
     switchDark() {

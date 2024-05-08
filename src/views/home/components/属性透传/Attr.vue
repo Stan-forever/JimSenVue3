@@ -1,8 +1,8 @@
 <template>
   <!-- <div> -->
-    <div class="line1" v-bind="$attrs">123</div>
-    <div class="line2">456</div>
-    <div>attrs: {{ $attrs }}</div>
+  <div class="line1" v-bind="$attrs">123</div>
+  <div class="line2">456</div>
+  <div>attrs: {{ $attrs }}</div>
   <!-- </div> -->
 </template>
 <script setup lang="ts">
@@ -24,6 +24,6 @@ import { useAttrs } from "vue";
   background-color: aqua;
 }
 .white-color {
-  color: blue;
+  color: white;
 }
 </style>

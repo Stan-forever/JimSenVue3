@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div class="flex items-center justify-between">
+    <div class="ml-2 mr-2 text-sm">暗黑模式</div>
     <el-switch v-model="isDark" :active-icon="Sunny" :inactive-icon="Moon" inline-prompt @change="handleChange" />
   </div>
 </template>

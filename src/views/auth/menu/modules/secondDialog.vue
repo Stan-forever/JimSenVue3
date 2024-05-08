@@ -82,6 +82,7 @@ const priceList = [
 const acceptParams = (isShow: boolean, params?: FirstFormType) => {
   visible.value = isShow;
   firstFormData.value = params;
+  console.log("firstFormData.value", firstFormData.value);
 };
 
 const handleSave = () => {

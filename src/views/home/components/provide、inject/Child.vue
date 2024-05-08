@@ -1,11 +1,11 @@
 <template>
   <div>
-    <TemplatePage />
+    <GrandChild />
   </div>
 </template>
 
 <script setup lang="ts">
-import TemplatePage from "./provide、inject/index.vue";
+import GrandChild from "./GrandChild.vue";
 </script>
 
 <style scoped></style>

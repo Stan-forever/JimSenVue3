@@ -11,7 +11,7 @@ const DEFAULT_PRIMARY: string = "#009688";
 
 export const useTheme = () => {
   const globalStore = useGlobalStore();
-  const { isDark, primary } = storeToRefs(globalStore);
+  const { isDark, primary, asideInverted } = storeToRefs(globalStore);
   const switchDark = () => {
     const html = document.documentElement as HTMLElement;
     if (isDark.value) html.setAttribute("class", "dark");
@@ -43,6 +43,7 @@ export const useTheme = () => {
     let type: Theme.ThemeType = "light";
     // if (layout.value === "transverse" && headerInverted.value) type = "inverted";
     // if (layout.value !== "transverse" && asideInverted.value) type = "inverted";
+    if (asideInverted.value) type = "inverted";
     if (isDark.value) type = "dark";
     const theme = menuTheme[type!];
     for (const [key, value] of Object.entries(theme)) {
@@ -53,9 +54,11 @@ export const useTheme = () => {
   // 设置侧边栏样式
   const setAsideTheme = () => {
     let type: Theme.ThemeType = "light";
-    // if (asideInverted.value) type = "inverted";
+    if (asideInverted.value) type = "inverted";
     if (isDark.value) type = "dark";
     const theme = asideTheme[type!];
+    console.log("type", type);
+    console.log("theme", theme);
     for (const [key, value] of Object.entries(theme)) {
       document.documentElement.style.setProperty(key, value);
     }
@@ -78,5 +81,5 @@ export const useTheme = () => {
     // if (isGrey.value) changeGreyOrWeak("grey", true);
     // if (isWeak.value) changeGreyOrWeak("weak", true);
   };
-  return { switchDark, initTheme };
+  return { switchDark, initTheme, setAsideTheme };
 };

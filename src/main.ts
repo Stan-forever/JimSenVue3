@@ -22,10 +22,14 @@ import "virtual:svg-icons-register";
 import App from "./App.vue";
 import router from "./router";
 
+import debounce from "./directives/modules/debounce";
+
 const app = createApp(App);
 
 app.use(pinia);
 app.use(ElementPlus);
 app.use(router);
+
+app.directive("debounce", debounce);
 
 app.mount("#app");
