@@ -40,5 +40,15 @@ export default defineConfig({
         assetFileNames: '[ext]/[name]-[hash].[ext]' // 资源文件像 字体，图片等
       }
     }
+  },
+  server: {
+    port: 9009,
+    proxy: {
+      '/api': {
+        target: 'http://192.168.100.10:30052/', //开发环境
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   }
 })

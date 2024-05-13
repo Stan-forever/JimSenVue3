@@ -16,6 +16,7 @@ export const loginApi = (params: LoginParamsType) => {
 };
 
 export const getMenuList = () => {
-  // return http.get<Menu.MenuOptions[]>("/menuList");
+  //   return http.get<Menu.MenuOptions[]>("/api/menuList");
+  //   return http.get<Menu.MenuOptions[]>("/api/pcldata-monitor-auth/auth/user/menu/searchMenutree");
   return authMenuList;
 };

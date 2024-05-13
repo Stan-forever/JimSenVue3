@@ -2,7 +2,6 @@
   <div>Home</div>
   <el-button @click="router.push('/dataScreen')">Push</el-button>
   <el-button type="primary" @click="resetToken">ResetToken</el-button>
-  <el-button type="primary" @click="openPdf">openPdf</el-button>
   <!-- <div class="rectangle"></div> -->
   <!-- <Child :[attributeName]="1" /> -->
   <div>当前attributeName: {{ attributeName }}</div>
@@ -30,10 +29,6 @@ const router = useRouter();
 
 const resetToken = () => {
   userStore.setToken("");
-};
-
-const openPdf = () => {
-  window.open("./1.pdf");
 };
 
 const typeFn = (type: any) => {

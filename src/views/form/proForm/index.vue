@@ -1,9 +1,17 @@
 <template>
-  <div>111</div>
+  <div>
+    <el-button type="primary" @click="handlePreview"> preview </el-button>
+    <PreviewDialog v-model:visible="previewVisible" />
+  </div>
 </template>
 
-<script setup lang="ts">
-import { useEcharts } from "@/hooks/useEcharts";
-</script>
+<script lang="ts" setup>
+import { ref } from "vue";
+import PreviewDialog from "./components/PreviewDialog.vue";
 
-<style scoped></style>
+const previewVisible = ref(false);
+
+const handlePreview = () => {
+  previewVisible.value = true;
+};
+</script>

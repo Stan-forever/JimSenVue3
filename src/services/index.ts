@@ -4,7 +4,9 @@ import axios from "axios";
 import type { ResultData } from "./interface";
 
 const config = {
-  baseURL: "https://www.fastmock.site/mock/0f7fc76e420581db7d2cf9316d59b18b/dataScreen/",
+  //   baseURL: "http://192.168.100.10:30052/",
+  // 默认地址请求地址，可在 .env.** 文件中修改
+  baseURL: import.meta.env.VITE_API_URL as string,
   timeout: 30000
 };
 
