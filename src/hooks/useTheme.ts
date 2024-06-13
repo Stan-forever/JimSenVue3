@@ -57,8 +57,6 @@ export const useTheme = () => {
     if (asideInverted.value) type = "inverted";
     if (isDark.value) type = "dark";
     const theme = asideTheme[type!];
-    console.log("type", type);
-    console.log("theme", theme);
     for (const [key, value] of Object.entries(theme)) {
       document.documentElement.style.setProperty(key, value);
     }
