@@ -1,0 +1,755 @@
+import React, { Fragment } from 'react'
+import { connect } from 'dva'
+import FtpOrHdfsForm from './FtpOrHdfsForm.js'
+import HbaseTargetForm from './HbaseTargetForm.js'
+import ElasticsearchTargetForm from './ElasticsearchTargetForm.js'
+import { Form } from '@ant-design/compatible'
+import '@ant-design/compatible/assets/index.css'
+import { Steps, Button, Select, Input, Radio, Row, Col, Checkbox, message } from 'antd'
+
+import { ajax } from 'utils/ajax.js'
+
+import './index.styl'
+import HttpOrWebserviceForm from './HttpOrWebserviceForm'
+
+const RadioGroup = Radio.Group
+const Step = Steps.Step
+const Option = Select.Option
+
+@Form.create()
+class Index extends React.Component {
+  constructor(props) {
+    super(props)
+    this.selectDataSource = ''
+    this.currentDataSource = undefined
+    this.targetDataSouceObj = {}
+    this.timer = null
+    this.dataSourceNew = false
+    this.isTableChange = false
+    this.state = {
+      dsType: '',
+      dataSourceArr: [],
+      chartArr: [],
+      dataSourceNew: false,
+      partArr: [],
+      header: [{ headerKey: '', headerValue: '' }],
+      saveLoading: false
+    }
+  }
+
+  componentDidMount() {
+    this.handleGetDataSource()
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { editData } = nextProps
+    if (editData && editData != this.props.editData) {
+      this.handleDsType(nextProps)
+    }
+  }
+
+  setHeader = (value) => {
+    const { header } = this.state
+    console.log('object :>> ', header, value)
+    this.setState({
+      header: value
+    })
+  }
+
+  handleDsType = (props) => {
+    const { editData, stepInfo } = props
+    if (!editData && !stepInfo) {
+      return false
+    }
+    let toDataId = ''
+    let toTable = ''
+    if (stepInfo && stepInfo.toDataId) {
+      toDataId = stepInfo.toDataId
+      toTable = stepInfo.toTable
+    } else if (editData && editData.toDataId) {
+      toDataId = editData.toDataId
+      toTable = editData.toTable
+    }
+    let dsType = ''
+    this.state.dataSourceArr.find((item) => {
+      if (item.id === toDataId) {
+        dsType = item.dsType
+        this.setState({
+          dsType
+        })
+        return true
+      }
+    })
+    if (dsType !== 'hdfs' && dsType !== 'ftp' && dsType !== '') {
+      this.handleSelectDataSource({ key: toDataId })
+      dsType !== 'elasticsearch' && this.handleSelectTable(toTable)
+    }
+  }
+
+  handleGetDataSource = () => {
+    ajax(
+      {
+        // url: "/dataSourceServer/meta/datasource/page",
+        url: '/dataSourceServer/meta/datasource/selectAll'
+      },
+      (res) => {
+        if (res.code == '0') {
+          let targetDataSouce = res.data.dataList
+          this.setState(
+            {
+              dataSourceArr: targetDataSouce
+            },
+            () => {
+              this.handleDsType(this.props)
+            }
+          )
+        }
+      }
+    )
+  }
+
+  handleSelectDataSource = (value, option = null) => {
+    this.currentDataSource = value
+    const { form } = this.props
+    let dsType = ''
+    if (option) {
+      dsType = option.props.dsType
+      this.setState(
+        {
+          dsType,
+          dataSourceNew: true
+        },
+        () => {
+          if (dsType === 'elasticsearch') {
+            form.setFieldsValue({
+              esIndex: void 0,
+              esType: '',
+              cleanup: false,
+              splitter: '',
+              alias: '',
+              aliasMode: 'append',
+              Settings: ''
+            })
+          } else {
+            form.setFieldsValue({
+              toTable: void 0,
+              preSql: '',
+              postSql: '',
+              cleaningRules: 1,
+              toFilePath: '',
+              toFileName: '',
+              toFileType: void 0,
+              toFieldDelimiter: ',',
+              toEncoding: '',
+              toEncoding: '',
+              toDateFormat: '',
+              toWriteMode: void 0
+            })
+          }
+        }
+      )
+    }
+    this.setState({
+      chartArr: []
+    })
+    if (dsType === 'hdfs' || dsType === 'ftp') {
+      return false
+    }
+    ajax(
+      {
+        url: '/dataSourceServer/meta/datasource/tableListById',
+        data: {
+          id: option ? option.value : value.key
+        }
+      },
+      (res) => {
+        if (res.code == '0') {
+          this.setState({
+            chartArr: res.data.dataList
+          })
+        }
+      }
+    )
+  }
+
+  handleSelectTable = (value, callback = null) => {
+    const { editData, stepInfo } = this.props
+    let toDataId = ''
+    if (stepInfo && stepInfo.toDataId) {
+      toDataId = stepInfo.toDataId
+    } else if (editData && editData.toDataId) {
+      toDataId = editData.toDataId
+    }
+    ajax(
+      {
+        url: '/dataSourceServer/meta/datasource/fieldPartition',
+        data: {
+          id: this.currentDataSource && this.currentDataSource.value,
+          tableName: value
+        }
+      },
+      (res) => {
+        if (res.code == '0') {
+          this.setState({
+            partArr: res.data.dataList
+          })
+        }
+        callback && callback()
+      }
+    )
+  }
+
+  onSearchCharArr = (value) => {
+    if (this.timer) clearTimeout(this.timer)
+    this.timer = setTimeout(() => {
+      const { form } = this.props
+      console.log('form.getFieldValue(', form.getFieldValue('toDataId'))
+      let sourceId = form.getFieldValue('toDataId').value
+      if (sourceId) {
+        form.setFieldsValue({
+          fromTable: null
+        })
+        ajax(
+          {
+            url: '/dataSourceServer/meta/datasource/tableListById',
+            data: {
+              id: sourceId,
+              name: value
+            }
+          },
+          (res) => {
+            if (res.code == '0') {
+              this.setState({
+                chartArr: res.data.dataList
+              })
+            }
+          }
+        )
+      }
+    }, 500)
+  }
+
+  handleSubmit = () => {
+    const { form, onNext } = this.props
+    const { header } = this.state
+    form.validateFields((err, fieldsValue) => {
+      if (err) return
+      let payload = {}
+      let partInfo = []
+      let value = {}
+      header.map((item) => {
+        value[item.headerKey] = item.headerValue
+      })
+      for (let item in fieldsValue) {
+        if (item.indexOf('part') === -1) {
+          payload[item] = fieldsValue[item]
+        } else {
+          partInfo.push(item.split('-')[1] + '=' + fieldsValue[item])
+        }
+      }
+      payload.header = JSON.stringify(value)
+      payload.partitionInfo = partInfo.join(',')
+      payload.toDataName = payload.toDataId.label
+      payload.toDataId = payload.toDataId.value || payload.toDataId.key
+      onNext('targetSource', { ...payload, dsType: this.state.dsType })
+    })
+  }
+
+  handleApiSubmit = () => {
+    const { form, onNext, stepInfo, thisStepInfo, nodeId, onClose, isTemplate, editData } =
+      this.props
+    const { header } = this.state
+    console.log('editData :>> ', editData)
+    form.validateFields((err, fieldsValue) => {
+      if (err) return
+      this.setState({
+        saveLoading: true
+      })
+
+      form.validateFields((err, fieldsValue) => {
+        if (err) return
+        let payload = {}
+        let partInfo = []
+        let value = {}
+        new Promise((resolve) => {
+          header.map((item) => {
+            console.log('item :>> ', item)
+            value[item.headerKey] = item.headerValue
+          })
+          for (let item in fieldsValue) {
+            if (item.indexOf('part') === -1) {
+              payload[item] = fieldsValue[item]
+            } else {
+              partInfo.push(item.split('-')[1] + '=' + fieldsValue[item])
+            }
+          }
+          payload.header = JSON.stringify(value)
+          payload.partitionInfo = partInfo.join(',')
+          payload.toDataName = payload.toDataId.label
+          payload.toDataId = payload.toDataId.key
+          resolve()
+        })
+          .then(() => {
+            ajax(
+              {
+                url: '/dataSourceServer/meta/taskSynNodeInfo/save',
+                method: 'post',
+                data: {
+                  id: editData && editData.id ? editData.id : undefined,
+                  nodeId,
+                  dsType: this.state.dsType,
+                  ...thisStepInfo.dataSource,
+                  ...payload
+                }
+              },
+              (res) => {
+                if (res.code == '0') {
+                  message.success('保存成功')
+                  onClose()
+                } else {
+                  message.warning(res.message)
+                }
+                this.setState({
+                  saveLoading: false
+                })
+              }
+            )
+          })
+          .catch((err) => {
+            console.error('err :>> ', err)
+          })
+      })
+
+      // this.props.dispatch({
+      // 	type: `taskmanagement/${
+      // 		isTemplate ? 'tempKafkaNodeInfoSave' : 'kafkaNodeInfoSave'
+      // 	}`,
+      // 	payload: {
+      // 		nodeId,
+      // 		...fieldsValue,
+      // 		...stepInfo.dataSource,
+      // 	},
+      // 	callback: () => {
+      // 		onClose();
+      // 	},
+      // });
+    })
+  }
+
+  switchMode = () => {
+    this.props.switchMode()
+  }
+
+  /**
+   *  初始化表单里，二次加载的表单项
+   *
+   */
+  handleInitLaterForm = () => {
+    if (this.state.dataSourceNew) {
+      this.setState(
+        {
+          dataSourceNew: false
+        },
+        () => {
+          this.props.form.setFieldsValue({
+            batchSize: 1000,
+            ignoreWriteError: false,
+            ignoreParseError: false,
+            timeout: 600000,
+            discovery: false,
+            compression: true,
+            multiThread: true,
+            dynamic: false
+          })
+        }
+      )
+      console.log(this, 'this')
+    }
+  }
+
+  partInitialValue = (index) => {
+    const { editData, isEdit, stepInfo, form } = this.props
+    const toTable = form.getFieldValue('toTable')
+    console.log(editData, stepInfo, isEdit, toTable, this.isTableChange)
+    let value = '${bizdate}'
+    let partText = ''
+
+    if (this.isTableChange) {
+      return value
+    }
+
+    if (stepInfo && stepInfo.partitionInfo && stepInfo.toTable === toTable) {
+      partText = stepInfo.partitionInfo.split(',')[index]
+    } else if (isEdit && editData && editData.partitionInfo && editData.toTable === toTable) {
+      partText = editData.partitionInfo.split(',')[index]
+    }
+
+    if (partText && partText.indexOf('=') !== -1) {
+      value = partText.split('=')[1]
+    }
+    return value
+  }
+
+  isModal = (e) => {
+    const { isModal } = this.props
+    this.props.setIsModal(!isModal)
+  }
+
+  onChangeModal = (v) => {
+    const { temptaskSynNodeInfoList, stepInfo, editData, setEditData } = this.props
+    const { dsType, partArr, dataSourceArr } = this.state
+    const { setFieldsValue, resetFields } = this.props.form
+
+    const tmpObj = temptaskSynNodeInfoList.find((items) => {
+      return items.id === v
+    })
+
+    const tmpObjA = dataSourceArr.find((items) => {
+      return items.id === tmpObj.toDataId
+    })
+
+    this.setState(
+      {
+        dsType: tmpObjA.dsType
+      },
+      () => {
+        const valueObj = {}
+
+        valueObj.toDataId = {
+          key: tmpObj.toDataId,
+          label: tmpObj.toDataId,
+          value: tmpObj.toDataId
+        }
+
+        if (tmpObj.hdfs) {
+          valueObj.hdfs = tmpObj.hdfs
+        } else if (tmpObj.ftp) {
+          valueObj.ftp = tmpObj.ftp
+        } else if (dsType !== 'hdfs' && dsType !== 'ftp' && dsType !== 'elasticsearch') {
+          valueObj.toTable = tmpObj.toTable
+          valueObj.preSql = tmpObj.preSql
+          valueObj.preSql = tmpObj.preSql
+          valueObj.postSql = tmpObj.postSql
+          valueObj.cleaningRules = tmpObj.cleaningRules
+          partArr.map((item) => {
+            valueObj[`part-${item.name}`] = tmpObj.preSql
+          })
+        }
+        this.props.form.setFieldsValue(valueObj)
+        setEditData({ ...editData, fieldRelation: [] }, resetFields())
+      }
+    )
+
+    // console.log(`tmpObj`, editData, stepInfo);
+
+    // setEditData({ tempId: v, ...tmpObj }, resetFields());
+  }
+
+  render() {
+    const {
+      onPrev,
+      editData,
+      isEdit,
+      stepInfo,
+      projectData,
+      temptaskSynNodeInfoList,
+      isTemplate,
+      isModal,
+      apiVisible
+    } = this.props
+    const { dataSourceArr, chartArr, partArr, dsType, header } = this.state
+    const { getFieldDecorator, getFieldValue } = this.props.form
+    const formItemLayout = {
+      labelCol: {
+        sm: { span: 6 }
+      },
+      wrapperCol: {
+        sm: { span: 18 }
+      }
+    }
+
+    return (
+      <Form>
+        {isTemplate ? null : dsType === 'http' ? null : (
+          <>
+            {/* <Form.Item {...formItemLayout} label={'引用模板'}>
+							{getFieldDecorator('isModal', {
+								initialValue: isModal ? true : false,
+							})(<Checkbox defaultChecked={isModal} onChange={this.isModal} />)}
+						</Form.Item> */}
+            {isModal ? (
+              <Form.Item {...formItemLayout} label={'选择模板'}>
+                {getFieldDecorator('tempIds', {
+                  initialValue: isEdit ? editData && editData.tempId : null
+                })(
+                  <Select onSelect={this.onChangeModal}>
+                    {temptaskSynNodeInfoList &&
+                      temptaskSynNodeInfoList.map((items) => {
+                        return (
+                          <Option key={items.id} value={items.id}>
+                            {`${items.taskName}：${items.nodeName}`}
+                          </Option>
+                        )
+                      })}
+                  </Select>
+                )}
+              </Form.Item>
+            ) : null}
+          </>
+        )}
+        <Form.Item {...formItemLayout} label="数据源">
+          {getFieldDecorator('toDataId', {
+            rules: [
+              {
+                required: true,
+                message: '请选择'
+              }
+            ],
+            initialValue:
+              stepInfo && stepInfo.toDataId
+                ? {
+                    key: stepInfo.toDataId,
+                    label: stepInfo.toDataName
+                  }
+                : isEdit && editData && editData.toDataId
+                  ? {
+                      key: editData.toDataId,
+                      label: editData.toDataName
+                    }
+                  : void 0
+          })(
+            <Select placeholder="请选择" onChange={this.handleSelectDataSource} labelInValue={true}>
+              {dataSourceArr.length > 0 &&
+                dataSourceArr.map((item, i) => {
+                  return (
+                    <Option key={i} value={item.id} dsType={item.dsType}>
+                      {item.dsName}
+                    </Option>
+                  )
+                })}
+            </Select>
+          )}
+        </Form.Item>
+        {dsType === 'http' ? (
+          <HttpOrWebserviceForm
+            dsType={dsType}
+            formItemLayout={formItemLayout}
+            getFieldDecorator={getFieldDecorator}
+            stepInfo={stepInfo}
+            isEdit={isEdit}
+            editData={editData}
+            setHeader={this.setHeader}
+            header={header}
+          />
+        ) : null}
+        {dsType === 'hdfs' ? (
+          <FtpOrHdfsForm
+            dsType="hdfs"
+            dataType="targetSource"
+            formItemLayout={formItemLayout}
+            getFieldDecorator={getFieldDecorator}
+            stepInfo={stepInfo}
+            isEdit={isEdit}
+            editData={editData}
+          ></FtpOrHdfsForm>
+        ) : null}
+        {dsType === 'ftp' ? (
+          <FtpOrHdfsForm
+            dsType="ftp"
+            dataType="targetSource"
+            formItemLayout={formItemLayout}
+            getFieldDecorator={getFieldDecorator}
+            stepInfo={stepInfo}
+            isEdit={isEdit}
+            editData={editData}
+          ></FtpOrHdfsForm>
+        ) : null}
+        {dsType !== 'hdfs' &&
+        dsType !== 'ftp' &&
+        dsType !== 'elasticsearch' &&
+        dsType !== 'http' ? (
+          <Fragment>
+            <Form.Item {...formItemLayout} label="表">
+              {getFieldDecorator('toTable', {
+                rules: [
+                  {
+                    required: true,
+                    message: '请选择'
+                  }
+                ],
+                initialValue:
+                  stepInfo && stepInfo.toTable
+                    ? stepInfo.toTable
+                    : isEdit && editData && editData.toTable
+                      ? editData.toTable
+                      : void 0
+              })(
+                <Select
+                  placeholder="请选择"
+                  onSelect={(value) =>
+                    this.handleSelectTable(value, () => {
+                      this.isTableChange = true
+                    })
+                  }
+                  showSearch
+                  filterOption={false}
+                  onSearch={this.onSearchCharArr}
+                >
+                  {chartArr.length > 0 &&
+                    chartArr.map((item, i) => {
+                      return (
+                        <Option key={i} value={item}>
+                          {item}
+                        </Option>
+                      )
+                    })}
+                </Select>
+              )}
+            </Form.Item>
+            {
+              // dsType == 'clickhouse' ?
+              partArr.length !== 0 ? (
+                <Form.Item {...formItemLayout} label="分区信息">
+                  {/* {getFieldDecorator('partitionInfo', {
+								initialValue: (stepInfo && stepInfo.partitionInfo) ? stepInfo.partitionInfo : (isEdit && editData && editData.partitionInfo) ? editData.partitionInfo : ''
+							})(
+								<Input placeholder="请输入" />
+							)} */}
+                  <Row>
+                    {partArr.map((item, index) => {
+                      return (
+                        <Col span={4} key={item.name}>
+                          <Form.Item key={item.name}>
+                            {getFieldDecorator(`part-${item.name}`, {
+                              initialValue: this.partInitialValue(index)
+                            })(
+                              <Input
+                                placeholder="请输入"
+                                addonBefore={item.name + '='}
+                                className="partInput"
+                              />
+                            )}
+                          </Form.Item>
+                        </Col>
+                      )
+                    })}
+                  </Row>
+                </Form.Item>
+              ) : null
+            }
+            <Form.Item {...formItemLayout} label="导入前准备语句" className="formItemTextarea">
+              {getFieldDecorator('preSql', {
+                initialValue:
+                  stepInfo && stepInfo.preSql
+                    ? stepInfo.preSql
+                    : isEdit && editData && editData.preSql
+                      ? editData.preSql
+                      : ''
+              })(<textarea placeholder="请输入导入数据前执行sql脚本..." />)}
+            </Form.Item>
+            <Form.Item {...formItemLayout} label="导入后完成语句" className="formItemTextarea">
+              {getFieldDecorator('postSql', {
+                initialValue:
+                  stepInfo && stepInfo.postSql
+                    ? stepInfo.postSql
+                    : isEdit && editData && editData.postSql
+                      ? editData.postSql
+                      : ''
+              })(<textarea placeholder="请输入导入数据后执行sql脚本..." />)}
+            </Form.Item>
+            {dsType == 'mysql' || dsType == 'tbase' || dsType == 'postgresql' ? (
+              <Form.Item {...formItemLayout} label="按字段更新" className="formItemTextarea">
+                {getFieldDecorator('splitPk', {
+                  initialValue:
+                    stepInfo && stepInfo.splitPk
+                      ? stepInfo.splitPk
+                      : isEdit && editData && editData.splitPk
+                        ? editData.splitPk
+                        : ''
+                })(<textarea />)}
+              </Form.Item>
+            ) : null}
+            {console.log('dsType :>> ', dsType)}
+            <Form.Item {...formItemLayout} label="清理规则">
+              {getFieldDecorator('cleaningRules', {
+                rules: [
+                  {
+                    required: true,
+                    message: '请选择'
+                  }
+                ],
+                initialValue:
+                  stepInfo && stepInfo.cleaningRules
+                    ? stepInfo.cleaningRules
+                    : isEdit && editData
+                      ? editData.cleaningRules
+                      : 1
+              })(
+                <RadioGroup>
+                  <Radio value={1}>写入前清理已有数据</Radio>
+                  <Radio value={2}>写入前保存不更新已有数据</Radio>
+                  {dsType == 'mysql' || dsType == 'tbase' || dsType == 'postgresql' ? (
+                    <Radio value={3}>写入前保存更新已有数据</Radio>
+                  ) : null}
+                </RadioGroup>
+              )}
+            </Form.Item>
+          </Fragment>
+        ) : null}
+        {dsType === 'hbase' ? (
+          <HbaseTargetForm
+            chartArr={chartArr}
+            onSearchCharArr={this.onSearchCharArr}
+            formItemLayout={formItemLayout}
+            getFieldDecorator={getFieldDecorator}
+            getFieldValue={getFieldValue}
+            stepInfo={stepInfo}
+            isEdit={isEdit}
+            editData={editData}
+          ></HbaseTargetForm>
+        ) : null}
+        {dsType === 'elasticsearch' && (
+          <ElasticsearchTargetForm
+            projectData={projectData}
+            chartArr={chartArr}
+            onSearchCharArr={this.onSearchCharArr}
+            handleInitLaterForm={this.handleInitLaterForm}
+            formItemLayout={formItemLayout}
+            getFieldDecorator={getFieldDecorator}
+            stepInfo={stepInfo}
+            isEdit={isEdit}
+            editData={editData}
+          ></ElasticsearchTargetForm>
+        )}
+
+        {apiVisible ? (
+          <div className="steps-action">
+            <Button className="button_normal" onClick={onPrev}>
+              上一步
+            </Button>
+            <Button type="primary" onClick={this.handleApiSubmit} loading={this.state.saveLoading}>
+              保存
+            </Button>
+          </div>
+        ) : (
+          <div className="steps-action">
+            <Button className="button_normal" onClick={onPrev}>
+              上一步
+            </Button>
+            <Button type="primary" onClick={this.handleSubmit}>
+              下一步
+            </Button>
+            <Button type="primary" onClick={this.switchMode}>
+              脚本模式
+            </Button>
+          </div>
+        )}
+      </Form>
+    )
+  }
+}
+
+export default connect(({ source, taskmanagement }) => ({
+  projectData: source.projectData,
+  temptaskSynNodeInfoList: taskmanagement.temptaskSynNodeInfoList
+}))(Index)
